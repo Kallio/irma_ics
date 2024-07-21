@@ -5,8 +5,6 @@ Usage instructions
     python3 -m venv venv
     source venv/bin/activate
     pip install requests ics pytz
-    LOGLEVEL=DEBUG python3 irma_ics.py ilmodedis
-  or
   
     LOGLEVEL=DEBUG python3 irma_ics.py  
 
