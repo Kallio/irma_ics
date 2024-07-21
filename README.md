@@ -1,5 +1,5 @@
 # irma_ics
-Convert irma calendar (https://irma.suunnistusliitto.fi/irma/public/competitioncalendar/view)  to caldav format 
+Convert irma calendar [https://irma.suunnistusliitto.fi/public/competitioncalendar/list](https://irma.suunnistusliitto.fi/public/competitioncalendar/list)  to caldav format 
 Usage instructions
 
     python3 -m venv venv
@@ -8,11 +8,7 @@ Usage instructions
     LOGLEVEL=DEBUG python3 irma_ics.py ilmodedis
   or
   
-    LOGLEVEL=DEBUG python3 irma_ics.py events 
-
-Final usage might be like
-
-    python3 irma_ics.py events > irma_evemts.ics && python3 irma_ics.py events > irma_ilmodedis.ics ; scp irma*.ics suunnistaja@server.metsä:/var/www/html/calendars/
+    LOGLEVEL=DEBUG python3 irma_ics.py  
 
 Known bugs/features
   - Output doesn't fully follow the standard. (It works good enough with OSX Sonoma ical.app anyhow)
