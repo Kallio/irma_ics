@@ -21,7 +21,7 @@ ilmodediscalendar = Calendar()
 base_url = "https://irma.suunnistusliitto.fi/public/competition/view/"       
 range_start = datetime.now()
 filecache_expiry = range_start+timedelta(days=2)
-range_end = range_start+timedelta(days=36)
+range_end = range_start+timedelta(days=182) # half year update is more than enough for now
 
 def get_cache(identifier):
     """magic cache"""
@@ -100,7 +100,6 @@ for item in data:
             event.make_all_day()
             event.description = f"Järjestävät seurat: {', '.join(club['name'] for club in item['organisingClubs'])}"
             event.categories = [item['sport']]
-            print(str(event.begin) + event.name)
             calendar.events.add(event)
             
             if item['registrationAllowed'] is True:
@@ -108,7 +107,6 @@ for item in data:
                 ilmodedis.begin = datetime.strptime(item['competitionDate'], "%Y-%m-%dT%H:%M:%S.%f%z")+timedelta(days=-10)+timedelta(hours=3)
                 ilmodedis.name = "#Ilmodedis "+item['competitionDayName']
                 ilmodedis.status = "TENTATIVE"
-                print(ilmodedis.name)
                 suburl= 'https://irma.suunnistusliitto.fi/connect/CompetitionEndpoint/viewCompetitionDay'
                 competition_id = item['dayId']
                 ilmodedis.url=f"{base_url}{competition_id}"
@@ -121,7 +119,6 @@ for item in data:
                 ilmodedis.name = "Ilmodedis "+item['competitionDayName']
                 ilmodedis.status = "TENTATIVE"
                 ilmodedis.make_all_day()
-                print(str(ilmodedis.begin) + ilmodedis.name)
                 ilmodediscalendar.events.add(ilmodedis)
                                
     except (ValueError, arrow.parser.ParserError) as exception:
@@ -129,8 +126,8 @@ for item in data:
    
 # Write the calendar to an .ics file
 with open('irma_events.ics', 'w', encoding='utf-8') as f:
-    print(" generating competitioninfo")
+    print("generating "+f.name)
     f.writelines(calendar)
 with open('irma_ilmodedis.ics', 'w', encoding='utf-8') as fd:
-    print(" generating ilmodedis")
+    print("generating "+fd.name)
     fd.writelines(ilmodediscalendar)
