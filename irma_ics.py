@@ -1,5 +1,5 @@
 import json
-import os 
+import os
 import hashlib
 from datetime import datetime, timedelta
 import arrow.parser
@@ -18,10 +18,10 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", logging.WARNING))
 # Create a new calendar
 calendar = Calendar()
 ilmodediscalendar = Calendar()
-base_url = "https://irma.suunnistusliitto.fi/public/competition/view/"       
+base_url = "https://irma.suunnistusliitto.fi/public/competition/view/"
 range_start = datetime.now()
 filecache_expiry = range_start+timedelta(days=2)
-range_end = range_start+timedelta(days=182) # half year update is more than enough for now
+range_end = range_start+timedelta(days=180)
 
 def get_cache(identifier):
     """magic cache"""
@@ -38,7 +38,7 @@ def get_url(url,cookies,heades,json_data,identifier):
     if cache.exists() and (datetime.fromtimestamp(cache.stat().st_mtime).isoformat() <= filecache_expiry.isoformat()) :
         LOGGER.debug("Cached %s", cache.name)
         return cache.read_text("utf8")
-   
+
     response = requests.post(url,
     cookies=cookies,
     headers=headers,
@@ -88,28 +88,31 @@ data = json.loads(f)
 
 # Parse each event and add to the calendar
 for item in data:
-    
+
     try:
         if ((item['competitionDate']) >= range_start.isoformat()) and ((item['competitionDate']) <= range_end.isoformat()):
             event = Event()
             event.name = item['competitionDayName']
             event.begin =datetime.strptime(item['competitionDate'], "%Y-%m-%dT%H:%M:%S.%f%z")+timedelta(hours=3)
-            event.status = "CONFIRMED"  
+            event.status = "CONFIRMED"
             competition_id = item['dayId']
             event.url =f"{base_url}{competition_id}"
             event.make_all_day()
-            event.description = f"Järjestävät seurat: {', '.join(club['name'] for club in item['organisingClubs'])}"
+            event.description = f"Järjestävät seurat: {', '.join(club['name'] for club in item['organisingClubs'])}\n {base_url}{competition_id}"
             event.categories = [item['sport']]
+            #print(str(event.begin) + event.name)
             calendar.events.add(event)
-            
+
             if item['registrationAllowed'] is True:
                 ilmodedis = Event()
                 ilmodedis.begin = datetime.strptime(item['competitionDate'], "%Y-%m-%dT%H:%M:%S.%f%z")+timedelta(days=-10)+timedelta(hours=3)
                 ilmodedis.name = "#Ilmodedis "+item['competitionDayName']
                 ilmodedis.status = "TENTATIVE"
+                #print(ilmodedis.name)
                 suburl= 'https://irma.suunnistusliitto.fi/connect/CompetitionEndpoint/viewCompetitionDay'
                 competition_id = item['dayId']
                 ilmodedis.url=f"{base_url}{competition_id}"
+                ilmodedis.description = f"Järjestävät seurat: {', '.join(club['name'] for club in item['organisingClubs'])}\n {base_url}{competition_id}"
                 ilmodedis.make_all_day()
                 ilmodedis.categories = [item['sport']]
                 json_data = { 'id': competition_id,}
@@ -119,15 +122,17 @@ for item in data:
                 ilmodedis.name = "Ilmodedis "+item['competitionDayName']
                 ilmodedis.status = "TENTATIVE"
                 ilmodedis.make_all_day()
+                #print(str(ilmodedis.begin) + ilmodedis.name)
                 ilmodediscalendar.events.add(ilmodedis)
-                               
+
     except (ValueError, arrow.parser.ParserError) as exception:
         LOGGER.warning("create_ics_error:%s:%s", event_name, str(exception))
-   
+
 # Write the calendar to an .ics file
 with open('irma_events.ics', 'w', encoding='utf-8') as f:
-    print("generating "+f.name)
+    print(" generating competitioninfo")
     f.writelines(calendar)
 with open('irma_ilmodedis.ics', 'w', encoding='utf-8') as fd:
-    print("generating "+fd.name)
+    print(" generating ilmodedis")
     fd.writelines(ilmodediscalendar)
+    
