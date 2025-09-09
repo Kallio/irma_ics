@@ -2,11 +2,14 @@
 Convert irma calendar [https://irma.suunnistusliitto.fi/public/competitioncalendar/list](https://irma.suunnistusliitto.fi/public/competitioncalendar/list)  to caldav format 
 Usage instructions
 
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install requests ics pytz
-  
-    LOGLEVEL=DEBUG python3 irma_ics.py  
+```
+bash irma_fetch.sh 
+```
+this creates 
+  - cache dir to limit hammering irma service. cache expiry can be defined in the code
+  - cookies.txt cookie file to communicate with service
+  - irma_events.ics  ics file that contains events
+  - irma_ilmodedis.ics file that contains dates for registration entry step #1 
 
 Known bugs/features
   - Output doesn't fully follow the standard. (It works good enough with OSX Sonoma ical.app anyhow)
